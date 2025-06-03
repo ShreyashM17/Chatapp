@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Registration
 import socket
-hostname = socket.gethostname()
-IPAddr = socket.gethostbyname(hostname)
-
+IPAddr = 'localhost'
 
 # Create your views here.
 def registration(request):

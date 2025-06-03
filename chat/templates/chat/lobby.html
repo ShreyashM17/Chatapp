@@ -1,55 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Lobby</title>
-    <meta name="viewport" content="width=device-width" initial-scale=1>
-    <style>
-        #logout{
-            position: absolute;
-            transform: translate(100%);
-        }
-        
-    </style>
+<meta charset="UTF-8">
+<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lobby</title>
+<style>
+    /* Base reset and theme */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #333;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 600px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+header h1 {
+  font-size: 1.4rem;
+}
+
+#logout {
+  text-decoration: none;
+  background: #e53e3e;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+#logout:hover {
+  background: #c53030;
+}
+
+.messages {
+  flex: 1;
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #f7f7f7;
+  padding: 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.message {
+  background: #e2e8f0;
+  padding: 0.5rem;
+  margin: 0.3rem 0;
+  border-radius: 8px;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input[type="text"] {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.chat-form button {
+  padding: 0.6rem 1rem;
+  background: #667eea;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.chat-form button:hover {
+  background: #5a67d8;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  .chat-form button {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+</style>
 </head>
 <body>
-    <h1>Hey Lets chat</h1>
-    <form id="form">
-        <input type="text" name="message" />
-        <button type="submit">Send</button>
+  <div class="container">
+    <header>
+      <h1>Hey! Let's chat 💬</h1>
+      <a id="logout" href="{{IP_add}}">Logout</a>
+    </header>
+
+    <div id="messages" class="messages"></div>
+
+    <form id="form" class="chat-form">
+      <input type="text" name="message" placeholder="Type your message..." required>
+      <button type="submit">Send</button>
     </form>
-    <a id="logout" href={{IP_add}}><button>Logout</button></a>
-        <br>
-    <div id="messages">
+  </div>
 
-    </div>
-    <script type="text/javascript">
-        let url = `ws://${window.location.host}/ws/socket-server/`
+  <script type="text/javascript">
+    let url = `ws://${window.location.host}/ws/socket-server/`
+    const chatSocket = new WebSocket(url)
 
-        const chatSocket = new WebSocket(url)
+    chatSocket.onmessage = function(e){
+      let data = JSON.parse(e.data)
+      console.log('Data:', data)
 
-        chatSocket.onmessage = function(e){
-            let data = JSON.parse(e.data)
-            console.log('Data:', data)
+      if(data.type === 'chat'){
+        let messages = document.getElementById('messages')
+        messages.insertAdjacentHTML('beforeend',`<div class="message"><p><strong>${data.name}:</strong> ${data.message}</p></div>`)
+        messages.scrollTop = messages.scrollHeight; // auto-scroll
+      }
+    }
 
-            if(data.type === 'chat'){
-                let messages = document.getElementById('messages')
-
-                messages.insertAdjacentHTML('beforeend',`<div><p>${data.name}: ${data.message} </p></div>`)
-            }
-        }
-
-        let form = document.getElementById('form')
-        form.addEventListener('submit', (e)=> {
-           e.preventDefault()
-           let message = e.target.message.value
-           chatSocket.send(JSON.stringify({
-            'message': message,
-            'name': '{{name}}',
-           })) 
-           form.reset()
-        })
-        </script>
+    let form = document.getElementById('form')
+    form.addEventListener('submit', (e)=> {
+      e.preventDefault()
+      let message = e.target.message.value
+      chatSocket.send(JSON.stringify({
+        'message': message,
+        'name': '{{name}}',
+      }))
+      form.reset()
+    })
+  </script>
 </body>
 </html>
