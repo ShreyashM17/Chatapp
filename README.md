@@ -1,5 +1,3 @@
----
-
 # ChatApp
 
 A real-time chat application built with Django, designed for local deployment. Users can join by simply entering a name and start chatting instantly. The application features a user-friendly interface and displays messages in real-time.
